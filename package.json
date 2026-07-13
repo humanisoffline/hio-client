@@ -1,0 +1,51 @@
+{
+  "name": "@humanisoffline/hio-client",
+  "version": "0.1.0",
+  "description": "Human Is Offline agent client — resolve, read, encrypt ask-first notes, receipt",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "hio-mcp": "dist/mcp-server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "keywords": [
+    "human-is-offline",
+    "agent",
+    "mcp",
+    "delegation"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humanisoffline/hio-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/humanisoffline/hio-client/issues"
+  },
+  "homepage": "https://github.com/humanisoffline/hio-client#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
