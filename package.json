@@ -1,6 +1,6 @@
 {
   "name": "@humanisoffline/hio-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Human Is Offline agent client — resolve, read, encrypt ask-first notes, receipt",
   "type": "module",
   "main": "./dist/index.js",
