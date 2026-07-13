@@ -21,5 +21,7 @@ jobs:
           node-version: "22"
           registry-url: https://registry.npmjs.org
 
+      - run: npm install -g npm@11
+
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --access public
