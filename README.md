@@ -91,15 +91,3 @@ Discovery: read `/llms.txt` on the configured base URL for routes and schemas.
 ## Network access
 
 This package makes outbound HTTPS requests to the configured Human Is Offline base URL (`https://humanisoffline.com` by default). It does not phone home elsewhere, collect telemetry, or run code at install time.
-
-## Publishing
-
-Releases are published from GitHub Actions with npm provenance (OIDC trusted publishing).
-
-1. Bump `version` in `package.json`.
-2. Commit and push to `main`.
-3. Tag and push: `git tag v0.1.1 && git push origin v0.1.1`
-
-The `publish.yml` workflow runs build, test, and `npm publish` on tag push.
-
-Trusted publisher on npmjs.com must point at workflow `publish.yml` in `humanisoffline/hio-client`.
