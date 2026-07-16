@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import nacl from "tweetnacl";
+import { bytesToBase64Url } from "./crypto.js";
 import { createHioClient, HioClientError } from "./index.js";
 import { HIO_PROTOCOL_VERSION } from "./types.js";
 
@@ -93,6 +95,103 @@ describe("HioClient", () => {
       envelope,
     });
     expect(result.receiptId).toBe("r_test");
+  });
+
+  it("fetchCardMarkdown returns card text", async () => {
+    const client = createHioClient({
+      fetch: mockFetch({
+        "/c/example.md": () => new Response("# Example card\n"),
+      }),
+    });
+
+    const markdown = await client.fetchCardMarkdown(
+      "https://humanisoffline.com/c/example.md",
+    );
+    expect(markdown).toContain("Example card");
+  });
+
+  it("getReceipt returns delegation receipt JSON", async () => {
+    const receipt = {
+      schema: "https://humanisoffline.com/schemas/delegation-receipt.v3.json",
+      schemaVersion: HIO_PROTOCOL_VERSION,
+      receipt: {
+        id: "r_test",
+        kind: "ask_first_inbox_note",
+        createdAt: "2026-07-12T12:00:00.000Z",
+      },
+      card: {
+        slug: "example",
+        schemaVersion: HIO_PROTOCOL_VERSION,
+        updatedAt: "2026-07-12T12:00:00.000Z",
+      },
+      hashes: {
+        payloadHash: "a".repeat(64),
+        recordHash: "b".repeat(64),
+      },
+      anchor: { status: "pending" },
+    };
+    const client = createHioClient({
+      fetch: mockFetch({
+        "/receipts/r_test/json": () => Response.json(receipt),
+      }),
+    });
+
+    const result = await client.getReceipt(
+      "https://humanisoffline.com/receipts/r_test/json",
+    );
+    expect(result.receipt.id).toBe("r_test");
+  });
+
+  it("submitAskFirstNotePlaintext builds a sealed envelope and posts it", async () => {
+    const pair = nacl.box.keyPair();
+    const publicKey = bytesToBase64Url(pair.publicKey);
+    let postedBody: unknown;
+    const cardJson = {
+      schemaVersion: HIO_PROTOCOL_VERSION,
+      card: {
+        slug: "example",
+        updatedAt: "2026-07-12T12:00:00.000Z",
+        requestPolicy: {
+          acceptsRequests: true,
+          endpoint: "https://humanisoffline.com/api/cards/example/requests",
+          encryption: "required" as const,
+          publicKeyId: "pk_test",
+          publicEncryptionKey: publicKey,
+        },
+      },
+    };
+    const client = createHioClient({
+      fetch: mockFetch({
+        "/api/cards/example/requests": (init) => {
+          postedBody = JSON.parse(String(init?.body));
+          return Response.json({
+            accepted: true,
+            receivedAt: "2026-07-12T12:00:00.000Z",
+            receiptUrl: "https://humanisoffline.com/receipts/r_plain/json",
+            receiptId: "r_plain",
+          });
+        },
+      }),
+    });
+
+    const result = await client.submitAskFirstNotePlaintext({
+      cardJson,
+      plaintext: {
+        schemaVersion: HIO_PROTOCOL_VERSION,
+        type: "inform",
+        title: "Need approval",
+        summary: "Deploy staging",
+        urgency: "normal",
+        riskLevel: "medium",
+      },
+    });
+
+    expect(result.receiptId).toBe("r_plain");
+    expect(postedBody).toMatchObject({
+      schemaVersion: HIO_PROTOCOL_VERSION,
+      cardSlug: "example",
+      encryption: { scheme: "sealed_box_v1" },
+    });
   });
 
   it("throws HioClientError on HTTP failure", async () => {

@@ -120,4 +120,42 @@ describe("buildAskFirstEnvelope", () => {
       ),
     ).toThrow("Card does not accept inbox requests");
   });
+
+  it("rejects cards without a request encryption key", () => {
+    expect(() =>
+      buildAskFirstEnvelopeFromCard(
+        {
+          schemaVersion: HIO_PROTOCOL_VERSION,
+          card: {
+            slug: "example",
+            updatedAt: "2026-07-12T12:00:00.000Z",
+            requestPolicy: {
+              acceptsRequests: true,
+              endpoint: "https://humanisoffline.com/api/cards/example/requests",
+              encryption: "required",
+              publicKeyId: null,
+              publicEncryptionKey: null,
+            },
+          },
+        },
+        plaintext,
+      ),
+    ).toThrow("Card does not have a request encryption key");
+  });
+
+  it("rejects plaintext with the wrong schema version", () => {
+    expect(() =>
+      buildAskFirstEnvelope({
+        cardSlug: "example",
+        cardUpdatedAt: "2026-07-12T12:00:00.000Z",
+        cardSchemaVersion: HIO_PROTOCOL_VERSION,
+        publicEncryptionKey: publicKey,
+        publicKeyId: "pk_test",
+        plaintext: {
+          ...plaintext,
+          schemaVersion: 2 as unknown as typeof HIO_PROTOCOL_VERSION,
+        },
+      }),
+    ).toThrow(`Plaintext schemaVersion must be ${HIO_PROTOCOL_VERSION}`);
+  });
 });
