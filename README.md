@@ -88,6 +88,28 @@ Optional: `resolve_card` when the human shared an alias instead of a card URL.
 
 Discovery: read `/llms.txt` on the configured base URL for routes and schemas.
 
+## Development
+
+This repo uses a two-branch release model:
+
+| Branch | Role |
+|--------|------|
+| `develop` | Integration — open PRs here |
+| `main` | Release line — version bumps and npm tags only |
+
+### Workflow
+
+1. Branch from `develop`, make changes, open a PR into `develop`.
+2. CI must pass (`ci` on Node 20 and 22, gitleaks, audit, build, tests).
+3. To release: bump `version` in `package.json` on `develop`, open a PR into `main`, merge.
+4. Tag the merge commit on `main`: `git tag v0.1.3 && git push origin v0.1.3`.
+
+The `publish.yml` workflow builds, tests, verifies the tag matches `package.json`, and publishes to npm with provenance.
+
+```bash
+npm run verify
+```
+
 ## Network access
 
 This package makes outbound HTTPS requests to the configured Human Is Offline base URL (`https://humanisoffline.com` by default). It does not phone home elsewhere, collect telemetry, or run code at install time.

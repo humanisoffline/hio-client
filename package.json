@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && vitest run",
-    "prepublishOnly": "npm run build && npm run test"
+    "verify": "npm run build && vitest run",
+    "prepublishOnly": "npm run verify"
   },
   "keywords": [
     "human-is-offline",
